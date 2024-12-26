@@ -12,6 +12,7 @@ For a more detailed changelog, see the commits.
 
 from os import environ
 import logging
+import re
 from tbgclient import Message, Session, api
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -37,11 +38,21 @@ def read_table(response):
     from io import StringIO
     with StringIO() as buff:
         doc = BeautifulSoup(response.content, 'html.parser')
+        table = doc.table
+        table.thead.th.a.replace_with("User ID")
+        for row in table.tbody.find_all("tr"):
+            # Reuse the Status column for user IDs
+            username = row.contents[3].a  # XXX: contents also includes spaces
+            user_id = re.search(
+                r"u=(\d+)",
+                username.get("href")
+            )[1]
+            row.contents[1].span.replace_with(user_id)
         # HACK: Relying on __repr__ giving a canonical representation
         # of the element (forgot a way to stringify elements)
-        print(doc.table, file=buff)
+        print(table, file=buff)
         buff.seek(0)
-        table = pd.read_html(buff)
+        table = pd.read_html(buff, index_col=0)[0]
     return table
 
 
@@ -52,7 +63,7 @@ def get_reader_writer():
             return pd.read_csv, pd.DataFrame.to_csv
         case ".json":
             return pd.read_json, pd.DataFrame.to_json
-        case ".xls" | ".xlsx":
+        case ".xls" | ".xlsx" | ".xlsb":
             return pd.read_excel, pd.DataFrame.to_excel
         case ".h5":
             return pd.read_hdf, pd.DataFrame.to_hdf
@@ -91,8 +102,9 @@ if __name__ == "__main__":
     table2 = api.do_action(session, "mlist", params={**params, "start": "50"},
                            no_percents=True)
     table2 = read_table(table2)
-    master_table = pd.concat(table1 + table2)
-    master_table = master_table[["Name", "Position", "Posts"]]
+    master_table = pd.concat([table1, table2])
+    # master_table = master_table[["Name", "Position", "Posts"]]
+    print(master_table.to_string())
 
     reader, writer = get_reader_writer()
     try:
