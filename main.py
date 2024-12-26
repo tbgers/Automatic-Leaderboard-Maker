@@ -15,7 +15,21 @@ import logging
 from tbgclient import Message, Session, api
 from bs4 import BeautifulSoup
 import pandas as pd
+import argparse
+
 logger = logging.getLogger(__name__)
+parser = argparse.ArgumentParser(
+    prog='Automatic Leaderboard Maker',
+    description='Makes and posts a leaderboard for the '
+                '"Top 100 Posters, round 2" topic.',
+)
+parser.add_argument('-s', '--simulate',
+                    action='store_true',
+                    help="Scrape only, don't save and publish")
+parser.add_argument('-f', '--file',
+                    type=str, default="leaderboard.json",
+                    help="Save this month's leaderboard to this file")
+args = parser.parse_args()
 
 
 def read_table(response):
