@@ -103,13 +103,20 @@ if __name__ == "__main__":
                            no_percents=True)
     table2 = read_table(table2)
     master_table = pd.concat([table1, table2])
-    # master_table = master_table[["Name", "Position", "Posts"]]
-    print(master_table.to_string())
+    master_table = master_table[["Name", "Position", "Posts"]]
 
+    # Compare with the past leaderboard
     reader, writer = get_reader_writer()
     try:
         prev_board = reader(args.file)
     except FileNotFoundError:
-        prev_board = make_dummy(prev_board)
+        prev_board = make_dummy(master_table)
+    for row in master_table.itertuples():
+        try:
+            diff = prev_board.loc[row.Index, "Posts"] - row.Posts
+        except (IndexError, TypeError):
+            diff = None
+        master_table.loc[row.Index, "Difference"] = diff
+    print(master_table.to_string())
 else:
     raise ImportError("This script isn't meant to be run as a module.")
