@@ -17,6 +17,7 @@ from tbgclient import Message, Session, api
 from bs4 import BeautifulSoup
 import pandas as pd
 import argparse
+from datetime import datetime, timezone
 from warnings import warn
 
 logger = logging.getLogger(__name__)
@@ -81,6 +82,37 @@ def make_dummy(table):
     return copy
 
 
+def tbg_type(type):
+    # Self explanatory.
+    if type == "Banned":
+        return "BAN"
+    elif "Retired" in type:
+        return "RET"
+    elif "Moderator" in type:
+        return "MOD"
+    elif "Team" in type:
+        return "TEA"
+    elif "TBGer" in type:
+        return "TBG"
+    else:
+        return "OTH"
+
+
+def to_intensity(posts):
+    if posts is None:
+        return "(NA)"
+    BRAILLE = "⠀⡀⡄⡆⡇⣇⣧⣷⣿"
+    posts //= 10
+    first = BRAILLE[min(posts, 8)]
+    posts //= 8
+    second = BRAILLE[min(max(0, posts - 1), 8)]
+    posts //= 9
+    third = BRAILLE[min(max(0, posts - 1), 8)]
+    posts //= 9
+    fourth = " .:"[min(max(0, posts - 1), 2)]
+    return first + second + third + fourth
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     # Log in to the TBGs
@@ -117,6 +149,27 @@ if __name__ == "__main__":
         except (IndexError, TypeError):
             diff = None
         master_table.loc[row.Index, "Difference"] = diff
-    print(master_table.to_string())
+
+    # Make the leaderboard
+    leaderboard = (
+        "[size=3][b]"
+        f"Leaderboard at {datetime.now(timezone.utc):%d %B %Y, %H %M %Z}"
+        "[/b][/size]\n[code]"
+    )
+    rank = 1
+    for row in master_table.itertuples():
+        # TODO: Rank change
+        leaderboard += (
+            f"{tbg_type(row.Position)} --- {to_intensity(row.Difference)} "
+            f"{rank:03d}. {row.Name} ({row.Posts})\n"
+        )
+        rank += 1
+    leaderboard += "[/code]"
+
+    if args.simulate:
+        logger.info("Simulation only: no data is sent or saved")
+        print(leaderboard)
+    else:
+        raise NotImplementedError("TODO: save and publish")
 else:
     raise ImportError("This script isn't meant to be run as a module.")
