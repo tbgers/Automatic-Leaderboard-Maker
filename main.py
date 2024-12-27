@@ -19,6 +19,8 @@ import pandas as pd
 import argparse
 from datetime import datetime, timezone
 from warnings import warn
+from functools import reduce
+import operator
 
 logger = logging.getLogger(__name__)
 parser = argparse.ArgumentParser(
@@ -32,7 +34,24 @@ parser.add_argument('-s', '--simulate',
 parser.add_argument('-f', '--file',
                     type=str, default="leaderboard.json",
                     help="Save this month's leaderboard to this file")
+parser.add_argument('-E', '--exclude-file',
+                    type=str, default="exclude.txt",
+                    help="List of user IDs to be excluded")
 args = parser.parse_args()
+
+
+# read the exclude file
+exclude = []
+try:
+    if args.exclude_file == "":
+        raise ValueError("No filename given")
+    with open(args.exclude_file, "r") as f:
+        for line in f:
+            exclude.append(int(line))
+except ValueError:
+    pass
+except IOError:
+    warn(f"Cannot read exclude file {args.exclude_file}")
 
 
 def read_table(response):
@@ -135,7 +154,13 @@ if __name__ == "__main__":
                            no_percents=True)
     table2 = read_table(table2)
     master_table = pd.concat([table1, table2])
+    # we only care about these rows
     master_table = master_table[["Name", "Position", "Posts"]]
+    # only pick users we don't exclude
+    master_table = master_table.loc[~reduce(
+        operator.__or__,
+        (master_table.index == x for x in exclude)
+    )]
 
     # Compare with the past leaderboard
     reader, writer = get_reader_writer()
