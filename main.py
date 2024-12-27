@@ -78,7 +78,7 @@ def get_reader_writer():
 
 def make_dummy(table):
     copy = table.copy()
-    copy.loc[:, "Posts"] = None
+    copy.loc[:, "Posts"] = pd.NA
     return copy
 
 
@@ -99,7 +99,7 @@ def tbg_type(type):
 
 
 def to_intensity(posts):
-    if posts is None:
+    if posts is pd.NA:
         return "(NA)"
     BRAILLE = "⠀⡀⡄⡆⡇⣇⣧⣷⣿"
     posts //= 10
