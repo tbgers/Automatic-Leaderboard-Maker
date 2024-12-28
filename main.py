@@ -144,7 +144,7 @@ def tbg_type(type):
 
 def to_intensity(posts):
     if posts is pd.NA:
-        return "(NA)"
+        return "⡗⢼⡯|"
     BRAILLE = "⠀⡀⡄⡆⡇⣇⣧⣷⣿"
     posts //= 10
     first = BRAILLE[min(posts, 8)]
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     # Make the leaderboard
     leaderboard = (
         "[size=3][b]"
-        f"Leaderboard at {datetime.now(timezone.utc):%d %B %Y, %H %M %Z}"
+        f"Leaderboard at {datetime.now(timezone.utc):%d %B %Y, %H:%M %Z}"
         "[/b][/size]\n[code]\n"
     )
     rank = 1
@@ -264,6 +264,6 @@ if __name__ == "__main__":
             ).submit_post()
         # Save the leaderboard
         logger.info("Saving leaderboard")
-        writer(master_table)
+        writer(master_table, args.file)
 else:
     raise ImportError("This script isn't meant to be run as a module.")
