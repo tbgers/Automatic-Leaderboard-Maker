@@ -36,7 +36,7 @@ parser.add_argument('-f', '--file',
                     help="Save this month's leaderboard to this file")
 parser.add_argument('-E', '--exclude-file',
                     type=str, default="exclude.txt",
-                    help="List of user IDs to be excluded")
+                    help="File containing a list of user IDs to be excluded")
 args = parser.parse_args()
 
 
@@ -168,25 +168,46 @@ if __name__ == "__main__":
         prev_board = reader(args.file)
     except FileNotFoundError:
         prev_board = make_dummy(master_table)
-    for row in master_table.itertuples():
+    rank_diff = {}
+    idxed_prev_board = prev_board.reset_index()
+    for i, row in enumerate(master_table.itertuples()):
+        # Find the post count difference
         try:
             diff = prev_board.loc[row.Index, "Posts"] - row.Posts
         except (IndexError, TypeError):
             diff = None
         master_table.loc[row.Index, "Difference"] = diff
+        # Find the rank difference
+        try:
+            prev_rank = idxed_prev_board.loc[
+                idxed_prev_board["User ID"] == row.Index
+            ].index[0]
+            rank_diff[row.Index] = prev_rank - i  # lower = better
+        except (IndexError, TypeError):
+            rank_diff[row.Index] = None
 
     # Make the leaderboard
     leaderboard = (
         "[size=3][b]"
         f"Leaderboard at {datetime.now(timezone.utc):%d %B %Y, %H %M %Z}"
-        "[/b][/size]\n[code]"
+        "[/b][/size]\n[code]\n"
     )
     rank = 1
+    max_length = master_table["Name"].map(len).max()
     for row in master_table.itertuples():
-        # TODO: Rank change
+        # DONE: Rank change
         leaderboard += (
-            f"{tbg_type(row.Position)} --- {to_intensity(row.Difference)} "
-            f"{rank:03d}. {row.Name} ({row.Posts})\n"
+            f"{tbg_type(row.Position)}"
+            + (
+                f" {rank_diff[row.Index]: =+3d} "
+                .replace("+ 0", "===")
+                .replace("+", "↑")
+                .replace("-", "↓")
+            ) +
+            f"{to_intensity(row.Difference)} "
+            f"{rank:=3d}. {row.Name.ljust(max_length)} "
+            f"{row.Posts} "
+            f"({'N/A' if row.Difference is pd.NA else row.Difference})\n"
         )
         rank += 1
     leaderboard += "[/code]"
