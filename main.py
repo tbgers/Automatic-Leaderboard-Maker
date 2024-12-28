@@ -78,21 +78,38 @@ def read_table(response):
 
 def get_reader_writer():
     import pathlib
+    from functools import partial as part
+
+    def col(func):
+        return part(func, index_col="User ID")
+
+    def label(func):
+        return part(func, index_label="User ID")
+
+    def labels(func):
+        return part(func, index_labels="User ID")
+
+    def orient(func):
+        return part(func, orient="index")
+
+    def key(func):
+        return part(func, key="leaderboard")
+
     match pathlib.PurePath(args.file).suffix:
         case ".csv":
-            return pd.read_csv, pd.DataFrame.to_csv
+            return col(pd.read_csv), labels(pd.DataFrame.to_csv)
         case ".json":
-            return pd.read_json, pd.DataFrame.to_json
+            return orient(pd.read_json), orient(pd.DataFrame.to_json)
         case ".xls" | ".xlsx" | ".xlsb":
-            return pd.read_excel, pd.DataFrame.to_excel
+            return col(pd.read_excel), label(pd.DataFrame.to_excel)
         case ".h5":
-            return pd.read_hdf, pd.DataFrame.to_hdf
+            return key(pd.read_hdf), key(pd.DataFrame.to_hdf)
         case ".pickle":
-            return pd.read_pickle, pd.DataFrame.to_pickle
+            return (pd.read_pickle), (pd.DataFrame.to_pickle)
         case _:
             warn("No extension given; ALM will pickle the current "
                  "leaderboard. This may be undesired.")
-            return pd.read_pickle, pd.DataFrame.to_pickle
+            return (pd.read_pickle), (pd.DataFrame.to_pickle)
 
 
 def make_dummy(table):
