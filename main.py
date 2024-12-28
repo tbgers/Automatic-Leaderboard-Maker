@@ -40,6 +40,9 @@ parser.add_argument('-E', '--exclude-file',
 parser.add_argument('-m', '--message',
                     type=str, default="message.txt",
                     help="File containing a footer message")
+parser.add_argument('-t', '--topic',
+                    type=int, default=5703,
+                    help="Which topic ID to post the leaderboard")
 args = parser.parse_args()
 
 
@@ -246,6 +249,14 @@ if __name__ == "__main__":
         logger.info("Simulation only: no data is sent or saved")
         print(leaderboard)
     else:
-        raise NotImplementedError("TODO: save and publish")
+        # Publish the leaderboard to the topic
+        logger.info("Publishing leaderboard")
+        with session:
+            # To be honest, I kinda hate this way of submitting posts
+            # I need to implement posting a la scratchattach or something
+            Message(content=leaderboard, tid=args.topic).submit_post()
+        # Save the leaderboard
+        logger.info("Saving leaderboard")
+        writer(master_table)
 else:
     raise ImportError("This script isn't meant to be run as a module.")
