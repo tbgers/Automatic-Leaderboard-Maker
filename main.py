@@ -37,6 +37,9 @@ parser.add_argument('-f', '--file',
 parser.add_argument('-E', '--exclude-file',
                     type=str, default="exclude.txt",
                     help="File containing a list of user IDs to be excluded")
+parser.add_argument('-m', '--message',
+                    type=str, default="message.txt",
+                    help="File containing a footer message")
 args = parser.parse_args()
 
 
@@ -228,6 +231,16 @@ if __name__ == "__main__":
         )
         rank += 1
     leaderboard += "[/code]"
+    # Add the optional message
+    try:
+        if args.message != "":
+            with open(args.message, "r") as f:
+                message = f.read()
+                if message != "":
+                    leaderboard += "\n"
+                    leaderboard += message
+    except FileNotFoundError:
+        warn(f"Message file {args.message} not found")
 
     if args.simulate:
         logger.info("Simulation only: no data is sent or saved")
