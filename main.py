@@ -144,7 +144,7 @@ def tbg_type(type):
 
 def to_intensity(posts):
     if posts is pd.NA:
-        return "⡗⢼⡯|"
+        return "⣏⣉⣉]"
     BRAILLE = "⠀⡀⡄⡆⡇⣇⣧⣷⣿"
     posts //= 10
     first = BRAILLE[min(posts, 8)]
