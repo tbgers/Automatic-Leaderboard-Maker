@@ -81,7 +81,7 @@ def read_table(response):
         print(table, file=buff)
         buff.seek(0)
         table = pd.read_html(buff, index_col=0)[0]
-    return table
+    return table.convert_dtypes()
 
 
 def get_reader_writer():
@@ -145,6 +145,8 @@ def tbg_type(type):
 def to_intensity(posts):
     if posts is pd.NA:
         return "⣏⣉⣉]"
+    if posts > 19440:  # Make sure we cap posts to this number
+        posts = 19440
     BRAILLE = "⠀⡀⡄⡆⡇⣇⣧⣷⣿"
     posts //= 10
     first = BRAILLE[min(posts, 8)]
@@ -190,7 +192,9 @@ if __name__ == "__main__":
     # Compare with the past leaderboard
     reader, writer = get_reader_writer()
     try:
-        prev_board = reader(args.file)
+        prev_board = reader(args.file).convert_dtypes()
+        # Make sure the index is called  "User ID"
+        prev_board.index.name = "User ID"
     except FileNotFoundError:
         prev_board = make_dummy(master_table)
     rank_diff = {}
@@ -198,10 +202,10 @@ if __name__ == "__main__":
     for i, row in enumerate(master_table.itertuples()):
         # Find the post count difference
         try:
-            diff = prev_board.loc[row.Index, "Posts"] - row.Posts
+            diff = row.Posts - prev_board.loc[row.Index, "Posts"]
         except (IndexError, TypeError):
-            diff = None
-        master_table.loc[row.Index, "Difference"] = diff
+            diff = pd.NA
+        master_table.loc[row.Index, "Difference"] = int(diff)
         # Find the rank difference
         try:
             prev_rank = idxed_prev_board.loc[
@@ -210,6 +214,7 @@ if __name__ == "__main__":
             rank_diff[row.Index] = prev_rank - i  # lower = better
         except (IndexError, TypeError):
             rank_diff[row.Index] = None
+    master_table = master_table.astype({"Difference": "Int64"})
 
     # Make the leaderboard
     leaderboard = (
