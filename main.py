@@ -199,13 +199,16 @@ if __name__ == "__main__":
         prev_board = make_dummy(master_table)
     rank_diff = {}
     idxed_prev_board = prev_board.reset_index()
+    # enforce "Difference" to be an Int64
+    # I wish I know how to do this better
+    master_table.loc[master_table.index[0], "Difference"] = pd.NA
     for i, row in enumerate(master_table.itertuples()):
         # Find the post count difference
         try:
-            diff = row.Posts - prev_board.loc[row.Index, "Posts"]
+            diff = int(row.Posts - prev_board.loc[row.Index, "Posts"])
         except (IndexError, TypeError):
             diff = pd.NA
-        master_table.loc[row.Index, "Difference"] = int(diff)
+        master_table.loc[row.Index, "Difference"] = diff
         # Find the rank difference
         try:
             prev_rank = idxed_prev_board.loc[
@@ -214,7 +217,7 @@ if __name__ == "__main__":
             rank_diff[row.Index] = prev_rank - i  # lower = better
         except (IndexError, TypeError):
             rank_diff[row.Index] = None
-    master_table = master_table.astype({"Difference": "Int64"})
+    # master_table = master_table.astype({"Difference": "Int64"})
 
     # Make the leaderboard
     leaderboard = (
