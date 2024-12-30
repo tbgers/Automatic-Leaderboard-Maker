@@ -1,0 +1,12 @@
+[Unit]
+Description=Automatic Leaderboard Maker
+
+[Service]
+Type=oneshot
+WorkingDirectory=/path/to/alm/
+Environment=USERNAME=Leaderboarder
+Environment=PASSWORD=opensesame
+ExecStart=/usr/bin/python main.py
+
+[Install]
+WantedBy=default.target

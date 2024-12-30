@@ -1,0 +1,8 @@
+[Unit]
+Description=Start Automatic Leaderboard Maker monthly
+
+[Timer]
+OnCalendar= *-*-1 00:00:00
+
+[Install]
+WantedBy=timers.target
