@@ -92,7 +92,7 @@ Most OSes offer a built-in job scheduler. Here's how you can set them up to run 
 ### Windows
 (warning: untested)
 
-Windows offers (Task Scheduler)[https://learn.microsoft.com/en-us/windows/win32/taskschd/task-scheduler-start-page]
+Windows offers [Task Scheduler](https://learn.microsoft.com/en-us/windows/win32/taskschd/task-scheduler-start-page)
 as their job scheduler. To make a task for ALM, do the following:
 - Open Control Panel > Administrative Tools > Task Scheduler.
   - On older Windows versions, you may find Task Scheduler on "Accessories and System Tools".
