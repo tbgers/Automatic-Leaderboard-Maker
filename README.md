@@ -9,6 +9,12 @@ as a leaderboard of the aforementioned "Top 100 Posters, round 2" topic. The cur
 leaderboard is also saved as a reference for the post count difference on the next run 
 of this script.
 
+## Dependencies
+Automatic Leaderboard Maker requires these two modules:
+- `pandas` 2.2.3 or similar
+- [`tbgclient-rewritten`](https://github.com/tbgers/tbgclient-rewritten)
+<!--at the time of writing it still has a bug, but that'll be fixed once I get John back-->
+
 ## Simulation
 In case where you want to see what the leaderboard looks like without publishing or saving 
 anything, you can simulate them with the `--simulate` switch.
@@ -42,7 +48,10 @@ TTT DDD AAAA xxx. Name #Post (Diff)
 - `BAN` for banned TBGers (note that the memberlist doesn't show banned TBGers)
 - `OTH` for other TBGer positions.
 
-### Rank difference
+### Rank
+`xxx` represents the user's current rank. Higher rank (lowest number rank) means a higher
+post count compared to TBGers of a lower ranking.
+
 `DDD` represents the user's change of rank from the previous leaderboard. 
 They are represented by an arrow (showing direction) and a number (showing amount).
 One example is `↑ 1` (meaning rank up 1, e.g. from third to second).
@@ -81,7 +90,7 @@ Here's an example of them:
 ⣿⣿⣿: : 19440 ppm
 (ppm means posts per month)
 ```
-A special case `⣏⣉⣉]` is used when no past activity is found. (for `Diff` = `N/A`)
+A special case `⣏⣉⣉]` is used when no past activity is found. (that is, `Diff` = `N/A`)
 
 ## Scheduling ALM
 When run, ALM only makes a single leaderboard. It does not run continuously, making
