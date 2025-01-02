@@ -121,6 +121,8 @@ If your system has `systemd` (which includes most Linux distros), you may add a 
 ALM. To add it, do the following:
 - Using root, copy the files `scheduler/autolm.service` and `scheduler/autolm.timer`
   to `/etc/systemd/system`.
+  - You may instead copy them on `~/.config/systemd/user/` if you want to run ALM
+    under the current user.
 - Edit the service by running `systemctl edit autolm.service` under root.
   - Change `/path/to/alm` with the location where you stored ALM.
   - Change the Environment values as well.
