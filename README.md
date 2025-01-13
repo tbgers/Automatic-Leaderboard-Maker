@@ -131,7 +131,8 @@ ALM. To add it, do the following:
 - Using root, copy the files `scheduler/autolm.service` and `scheduler/autolm.timer`
   to `/etc/systemd/system`.
   - You may instead copy them on `~/.config/systemd/user/` if you want to run ALM
-    under the current user.
+    under the current user. Just note that you have to add `--user` on the command to
+    target the unit.
 - Edit the service by running `systemctl edit autolm.service` under root.
   - Change `/path/to/alm` with the location where you stored ALM.
   - Change the Environment values as well.
@@ -140,3 +141,6 @@ ALM. To add it, do the following:
 - If desired, you can add `Persistent=true` to `scheduler/autolm.timer`. 
   This will start ALM immediately when it missed the last start time.
   This is useful for machines that doesn't stay on.
+- Enable and start the timer unit by running `systemctl enable --now autolm.timer`.
+  - Do not enable `autolm` or `autolm.service`. This will run ALM every time your
+    machine boots which may be undesired.
