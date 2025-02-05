@@ -142,5 +142,4 @@ ALM. To add it, do the following:
   This will start ALM immediately when it missed the last start time.
   This is useful for machines that doesn't stay on.
 - Enable and start the timer unit by running `systemctl enable --now autolm.timer`.
-  - Do not enable `autolm` or `autolm.service`. This will run ALM every time your
-    machine boots which may be undesired.
+  - Enabling `autolm` or `autolm.service` will instead run the code, instead of scheduling it.
