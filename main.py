@@ -4,12 +4,13 @@ For use with "Top 100 Posters, round 2".
 No warranties whatsoever. ;)
 
 Changes (outline):
+2.0.1: Added date-checking to make ALM cope with malfunctioning job schedulers
 2.0.0: Started from scratch, now scrapes the table by its own
-1.2.0 and older: SEE: the replit project
+1.2.0 and older: SEE: the replit project (oh wait they deleted it, whoops)
 
 For a more detailed changelog, see the commits.
 """
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 from os import environ
 import logging
@@ -19,7 +20,7 @@ from tbgclient import Message, Session, api
 from bs4 import BeautifulSoup
 import pandas as pd
 import argparse
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from warnings import warn
 from functools import reduce
 import operator
@@ -45,6 +46,9 @@ parser.add_argument('-m', '--message',
 parser.add_argument('-t', '--topic',
                     type=int, default=5703,
                     help="Which topic ID to post the leaderboard")
+parser.add_argument('-u', '--on-unscheduled',
+                    type=str, choices=["simulate", "continue", "abort", "warn"], default="simulate",
+                    help="What to do when it's not the first day of the month")
 args = parser.parse_args()
 
 
@@ -159,8 +163,37 @@ def to_intensity(posts):
     return first + second + third + fourth
 
 
+# HACK: systemd always spuriously execute ALM, this should mitigate it
+def check_date():
+    """Check if we're supposed to post right now"""
+    now = datetime.now(timezone.utc)
+    nearest_first_day = now
+    # Except perhaps February, most month's midway point is at 15,
+    # so we use that for the comparison to round
+    if nearest_first_day.day >= 15:
+        nearest_first_day.month += 1
+    nearest_first_day.day = 15
+    difference = now - nearest_first_day
+
+    if timedelta(minutes=15) < difference < timedelta(days=1):
+        if args.on_unscheduled != "ignore":
+            logger.warning("This isn't the time to post that!")
+        match args.on_unscheduled:
+            case "simulate":
+                logger.info("Entering simulation mode")
+                logger.info('If you insist, specifiy "-u warn" to ignore this check.')
+                args.simulate = True
+            case "abort":
+                logger.info("Aborting")
+                exit(1)
+            case "warn":
+                logger.info("Moving on.")
+        
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
+    check_date()
     # Log in to the TBGs
     session = Session()
     logger.info(f"Logging in as {environ['USERNAME']}")
