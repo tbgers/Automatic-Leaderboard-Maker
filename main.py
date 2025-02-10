@@ -171,7 +171,10 @@ def check_date():
     # Except perhaps February, most month's midway point is at 15,
     # so we use that for the comparison to round
     if nearest_first_day.day >= 15:
-        nearest_first_day = nearest_first_day.replace(month=nearest_first_day.month+1)
+        if nearest_first_day.month == 12:  # edge case!
+            nearest_first_day = nearest_first_day.replace(month=1, year=nearest_first_day.year+1)
+        else:
+            nearest_first_day = nearest_first_day.replace(month=nearest_first_day.month+1)
     nearest_first_day = nearest_first_day.replace(day=1)
     difference = now - nearest_first_day
 
@@ -182,7 +185,7 @@ def check_date():
         match args.on_unscheduled:
             case "simulate":
                 logger.info("Entering simulation mode")
-                logger.info('If you insist, specifiy "-u warn" to ignore this check.')
+                logger.info('If you insist, specifiy "-u ignore" to ignore this check.')
                 args.simulate = True
             case "abort":
                 logger.info("Aborting")
