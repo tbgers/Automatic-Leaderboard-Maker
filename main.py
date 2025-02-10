@@ -171,11 +171,12 @@ def check_date():
     # Except perhaps February, most month's midway point is at 15,
     # so we use that for the comparison to round
     if nearest_first_day.day >= 15:
-        nearest_first_day.month += 1
-    nearest_first_day.day = 15
+        nearest_first_day = nearest_first_day.replace(month=nearest_first_day.month+1)
+    nearest_first_day = nearest_first_day.replace(day=1)
     difference = now - nearest_first_day
 
-    if timedelta(minutes=15) < difference < timedelta(days=1):
+    print(f"{now=}, {nearest_first_day=}, {difference=}")
+    if not (timedelta(minutes=-15) < difference < timedelta(days=1)):
         if args.on_unscheduled != "ignore":
             logger.warning("This isn't the time to post that!")
         match args.on_unscheduled:
